@@ -518,6 +518,7 @@ def game():
             col = monster.player_collision(player)
             if col and not player.attacking:
                 lives -= 1
+                score -= score
                 if lives == 0:
                     lives = 3
                     score = 0
