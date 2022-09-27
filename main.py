@@ -510,6 +510,13 @@ def game():
 
         player.attack()
         player.update(level.map)
+        
+        # show main menu after high score to start new game
+        for event in pygame.event.get():
+            if score == 10:
+                show_main_menu = True
+                pygame.time.delay(500)
+                return main_menu()
 
         # loop through monsters
         for monster in monsters:
