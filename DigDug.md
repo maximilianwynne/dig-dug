@@ -10,4 +10,4 @@ Each iteration of the game features different tunnel, monster, coin, and player 
 
 While the map remains static, each coin, monster, and player is spaced out evenly in order to give you, the player, a chance to both collect coins and evade monsters. 
 
-Some coins spawn in tunnels infested with monsters, so timing your entry is crucial.  
+Some coins spawn in tunnels with monsters already in them, so timing yourself is crucial. 
