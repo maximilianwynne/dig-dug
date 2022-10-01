@@ -5,7 +5,7 @@ import csv
 import math
 from pygame.rect import Rect
 
-NUM_MONSTERS = 20
+NUM_MONSTERS = 1
 
 WIDTH = 800
 HEIGHT = 600
@@ -113,6 +113,10 @@ class Player(pygame.sprite.Sprite):
 
             moving = True
 
+        # quit game if choose esc
+        if keys[pygame.K_ESCAPE]:
+            pygame.quit()
+
         new_rect = self.rect.copy()
 
         # check if we are aligned with a column
@@ -147,6 +151,7 @@ class Player(pygame.sprite.Sprite):
         super().update()
         self.rect.clamp_ip(screen.get_rect())
 
+
     def attack(self):
         self.cooldown()
         if self.cooldown == 0 and not self.attacking:
@@ -169,7 +174,7 @@ class Coin(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
 
-        self.image = pygame.image.load("images/coin_1.gif")
+        self.image = pygame.image.load("images/coin.png")
         self.image = pygame.transform.scale(self.image, (30, 30))
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
@@ -208,9 +213,7 @@ def add_coins(n):
         coins.append(Coin((x, y)))
         distances.append((x, y))
 
-
     return coins
-
 
 class Monster(pygame.sprite.Sprite):
     def __init__(self, x, y, movementx, movementy, img=MONSTER):
@@ -246,7 +249,7 @@ class Monster(pygame.sprite.Sprite):
         if self.rect.y >= HEIGHT - self.rect.height and self.movementy > 0 or self.rect.y <= 0 and self.movementy < 0:
             self.movementy = - self.movementy
 
-        # are we aligned with grid position
+        # are we aligned with grid position?
         if self.rect.x % TILE_SIZE == 0 and self.rect.y % TILE_SIZE == 0:
             self.choose_direction(level)
 
@@ -484,7 +487,7 @@ def game():
         monsters.append(monster)
         all_sprites.add(monster)
 
-    px, py = get_random_available_tile(monster_positions, distance_tiles=4)
+    px, py = get_random_available_tile(monster_positions, distance_tiles=3)
     player = Player(px, py)
 
     all_sprites.add(player)
@@ -510,7 +513,7 @@ def game():
 
         player.attack()
         player.update(level.map)
-        
+
         # show main menu after high score to start new game
         for event in pygame.event.get():
             if score == 10:
@@ -554,6 +557,5 @@ def game():
         #for i in all_sprites:
         #    print(i)
         draw(all_sprites, monsters, score, lives, level)
-
 
 main_menu()
