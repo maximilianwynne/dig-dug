@@ -556,7 +556,7 @@ def game(): # setup function, mainloop function
 
         # show main menu after high score to start new game
         for event in pygame.event.get():
-            if score == 1:
+            if score == 10:
                 score = 0
                 #show_main_menu = True
                 pygame.time.delay(500)
