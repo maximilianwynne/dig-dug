@@ -5,7 +5,7 @@ import csv
 import math
 from pygame.rect import Rect
 
-NUM_MONSTERS = 1
+NUM_MONSTERS = 20
 
 WIDTH = 800
 HEIGHT = 600
@@ -42,7 +42,7 @@ class Character(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.walk_animation = [
+        self.walk_animation = [ # could be a dictionary :)
             [
                 pygame.transform.scale(pygame.image.load(os.path.join("images", f"playerDigging1.png")),
                                        (TILE_SIZE, TILE_SIZE)).convert_alpha(),
@@ -61,7 +61,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 1
         #
         self.current_img = 0
-        self.current = 0
+        self.current = 0 #
         self.image = self.walk_animation[self.current][self.current_img]
         self.flipx = False
         self.flipy = False
@@ -80,8 +80,10 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         input_x = 0
         input_y = 0
+        direction = "vertical or horizontal"
         moving = False
         if keys[pygame.K_UP]:
+            direction = "vertical"
             self.current = 1
             self.flipy = False
             self.flipx = False
@@ -90,6 +92,7 @@ class Player(pygame.sprite.Sprite):
             moving = True
 
         if keys[pygame.K_DOWN]:
+            direction = "vertical"
             self.current = 1
             self.flipx = False
             self.flipy = True
@@ -98,6 +101,7 @@ class Player(pygame.sprite.Sprite):
             moving = True
 
         if keys[pygame.K_LEFT]:
+            direction = "horizontal"
             input_x = -self.speed
             self.current = 0
             self.flipy = False
@@ -106,6 +110,7 @@ class Player(pygame.sprite.Sprite):
             moving = True
 
         if keys[pygame.K_RIGHT]:
+            direction = "horizontal"
             input_x = self.speed
             self.current = 0
             self.flipy = False
@@ -113,21 +118,48 @@ class Player(pygame.sprite.Sprite):
 
             moving = True
 
-        # quit game if choose esc
-        if keys[pygame.K_ESCAPE]:
-            pygame.quit()
-
         new_rect = self.rect.copy()
 
-        # check if we are aligned with a column
-        if new_rect.x % TILE_SIZE == 0:
-            # vertical movement
-            new_rect.y += input_y * self.speed
+        # we don't really want to let them remain unaligned
+        # 5 pixels off, adjust this by 5 pixels
 
-        # check if we are aligned with a row
-        if new_rect.y % TILE_SIZE == 0:
-            # horizontal movement
-            new_rect.x += input_x * self.speed
+
+
+        # 280 pixels, 28, 280%28, 0
+        # 279 pixels, 28, 279%28, 27
+
+        # 280, 308 represents tile 11
+        # 275, adjust this to 280, y_pixel_error would be 23
+        # 285, adjust this to 280, y_pixel_error would be 5
+
+        # check if we are aligned with a column
+
+        ACCEPTABLE_ERROR = 10
+        if moving:
+            if direction == "vertical":
+                # number between 0 and 28
+                x_pixel_error = new_rect.x % TILE_SIZE
+                if 0 <= x_pixel_error <= ACCEPTABLE_ERROR: # 0 to 10
+                    # vertical movement
+                    print(f"adjusting player {(x_pixel_error)} pixels left")
+                    new_rect.x -= x_pixel_error
+                    new_rect.y += input_y * self.speed
+                elif TILE_SIZE - ACCEPTABLE_ERROR < x_pixel_error < TILE_SIZE:
+                    print(f"adjusting player {(TILE_SIZE - x_pixel_error)} pixels right")
+                    new_rect.x += (TILE_SIZE - x_pixel_error)
+                    new_rect.y += input_y * self.speed
+
+            elif direction == "horizontal":
+                y_pixel_error = new_rect.y % TILE_SIZE
+                if 0 <= y_pixel_error <= ACCEPTABLE_ERROR: # SLIGHTLY BELOW
+                    # horizontal movement
+                    print(f"adjusting player {(y_pixel_error)} pixels left")
+                    new_rect.y -= y_pixel_error
+                    new_rect.x += input_x * self.speed
+                elif TILE_SIZE - ACCEPTABLE_ERROR < y_pixel_error < TILE_SIZE:
+                    print(f"adjusting player {(TILE_SIZE - y_pixel_error)} pixels right")
+                    new_rect.y += (TILE_SIZE - y_pixel_error)
+                    new_rect.x += input_x * self.speed
 
         for row in level:
             for row_i in range(len(row)):
@@ -149,8 +181,6 @@ class Player(pygame.sprite.Sprite):
                                            self.flipy)
 
         super().update()
-        self.rect.clamp_ip(screen.get_rect())
-
 
     def attack(self):
         self.cooldown()
@@ -174,7 +204,7 @@ class Coin(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
 
-        self.image = pygame.image.load("images/coin.png")
+        self.image = pygame.image.load("images/coin_1.gif")
         self.image = pygame.transform.scale(self.image, (30, 30))
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
@@ -213,7 +243,9 @@ def add_coins(n):
         coins.append(Coin((x, y)))
         distances.append((x, y))
 
+
     return coins
+
 
 class Monster(pygame.sprite.Sprite):
     def __init__(self, x, y, movementx, movementy, img=MONSTER):
@@ -249,7 +281,7 @@ class Monster(pygame.sprite.Sprite):
         if self.rect.y >= HEIGHT - self.rect.height and self.movementy > 0 or self.rect.y <= 0 and self.movementy < 0:
             self.movementy = - self.movementy
 
-        # are we aligned with grid position?
+        # are we aligned with grid position
         if self.rect.x % TILE_SIZE == 0 and self.rect.y % TILE_SIZE == 0:
             self.choose_direction(level)
 
@@ -332,8 +364,29 @@ class TileMap():
                 if tile is not None:
                     tile.draw(screen)
 
-    def load(self, filename):  # this should probably be rewritten
+    def _load_one_tile(self, screen_x, screen_y, number, tile_row):
         tile_size_original = 16
+        print(screen_x, screen_y, number)
+
+        number = int(number)
+        if number >= 0:
+            # get image corresponding from tile
+            x = tile_size_original * (
+                    number % 6)  # this is rather not efficient i think but it is run only once
+            y = tile_size_original * (number // 6)
+            tile_surface_original = pygame.surface.Surface((tile_size_original, tile_size_original))
+            tile_surface_scaled = pygame.surface.Surface((TILE_SIZE, TILE_SIZE))
+            tile_surface_original.blit(self.tile_img, (0, 0),
+                                       Rect(x, y, tile_size_original, tile_size_original))
+            pygame.transform.scale(tile_surface_original, (TILE_SIZE, TILE_SIZE),
+                                   tile_surface_scaled)
+            is_obstacle = number == 21 or 24 <= number <= 45
+            is_dirt = not is_obstacle
+            tile_row.append(Tile(tile_surface_scaled, screen_x, screen_y, is_obstacle, is_dirt))
+        else:
+            tile_row.append(None)
+
+    def load(self, filename):
         map = []
         with open(os.path.join(filename)) as file:
             data = csv.reader(file, delimiter=',')
@@ -342,23 +395,7 @@ class TileMap():
                 screen_x = self.start_x
                 tile_row = []
                 for number in row:
-                    number = int(number)
-                    if number >= 0:
-                        # get image corresponding from tile
-                        x = tile_size_original * (
-                                number % 6)  # this is rather not efficient i think but it is run only once
-                        y = tile_size_original * (number // 6)
-                        tile_surface_original = pygame.surface.Surface((tile_size_original, tile_size_original))
-                        tile_surface_scaled = pygame.surface.Surface((TILE_SIZE, TILE_SIZE))
-                        tile_surface_original.blit(self.tile_img, (0, 0),
-                                                   Rect(x, y, tile_size_original, tile_size_original))
-                        pygame.transform.scale(tile_surface_original, (TILE_SIZE, TILE_SIZE),
-                                               tile_surface_scaled)
-                        is_obstacle = number == 21 or 24 <= number <= 45
-                        is_dirt = not is_obstacle
-                        tile_row.append(Tile(tile_surface_scaled, screen_x, screen_y, is_obstacle, is_dirt))
-                    else:
-                        tile_row.append(None)
+                    self._load_one_tile(screen_x, screen_y, number, tile_row)
                     screen_x += TILE_SIZE
                 map.append(tile_row)
                 screen_y += TILE_SIZE
@@ -457,7 +494,7 @@ sides = []
 running = True
 
 
-def game():
+def game(): # setup function, mainloop function
     global running, score, lives, clock
     next_obstacle = HEIGHT
 
@@ -471,6 +508,8 @@ def game():
                     break
 
     all_sprites = pygame.sprite.Group()
+
+
 
     monsters = []
     monster_positions = []
@@ -487,6 +526,7 @@ def game():
         monsters.append(monster)
         all_sprites.add(monster)
 
+    # reusable function for coins and the player
     px, py = get_random_available_tile(monster_positions, distance_tiles=3)
     player = Player(px, py)
 
@@ -516,8 +556,9 @@ def game():
 
         # show main menu after high score to start new game
         for event in pygame.event.get():
-            if score == 10:
-                show_main_menu = True
+            if score == 1:
+                score = 0
+                #show_main_menu = True
                 pygame.time.delay(500)
                 return main_menu()
 
@@ -528,7 +569,6 @@ def game():
             col = monster.player_collision(player)
             if col and not player.attacking:
                 lives -= 1
-                score -= score
                 if lives == 0:
                     lives = 3
                     score = 0
@@ -557,5 +597,6 @@ def game():
         #for i in all_sprites:
         #    print(i)
         draw(all_sprites, monsters, score, lives, level)
+
 
 main_menu()
