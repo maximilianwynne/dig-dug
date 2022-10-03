@@ -181,6 +181,7 @@ class Player(pygame.sprite.Sprite):
                                            self.flipy)
 
         super().update()
+        self.rect.clamp_ip(screen.get_rect())
 
     def attack(self):
         self.cooldown()
