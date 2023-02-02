@@ -11,3 +11,5 @@ Each iteration of the game features different tunnel, monster, coin, and player 
 While the map layout remains static for the game, each coin, monster, and player is spaced out evenly in order to give you a solid chance to both collect coins and not collide with monsters when beginning the game. 
 
 Some coins spawn in tunnels with monsters already in them.
+
+![alt text](![image](https://user-images.githubusercontent.com/76392789/216454738-44b43d49-1bbf-4016-8965-782a40c2953d.png)
