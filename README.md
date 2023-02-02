@@ -13,3 +13,7 @@ While the map layout remains static for the game, each coin, monster, and player
 Some coins spawn in tunnels with monsters already in them.
 
 ![image](https://user-images.githubusercontent.com/76392789/216454738-44b43d49-1bbf-4016-8965-782a40c2953d.png)
+
+![image](https://user-images.githubusercontent.com/76392789/216454950-86cfae80-8ba8-44b8-af5e-d9eeaea29d31.png)
+
+![image](https://user-images.githubusercontent.com/76392789/216455113-b4017cb8-edc7-4ddd-9656-9871f10e2497.png)
