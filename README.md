@@ -1,4 +1,4 @@
-# DigDug
+# DigDug Python Project
 
 My Python version of Dig Dug is a coin-collecting maze adventure. 
 
